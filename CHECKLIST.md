@@ -4,16 +4,71 @@ Copy and track progress during code review:
 
 ```
 ## Review Progress
-- [ ] 1. Null Safety & Boundaries
-- [ ] 2. Exception Handling  
-- [ ] 3. Logic Defects
-- [ ] 4. Code Smells
-- [ ] 5. Concurrency Issues
+- [ ] 1. Security Vulnerabilities
+- [ ] 2. Input Validation
+- [ ] 3. Null Safety & Boundaries
+- [ ] 4. Exception Handling  
+- [ ] 5. Logic Defects
+- [ ] 6. Code Smells
+- [ ] 7. Concurrency Issues
+- [ ] 8. Performance Issues
 ```
 
 ---
 
-## 1. Null Safety & Boundary Checks
+## 1. Security Vulnerabilities
+
+### Injection Attacks
+- [ ] SQL queries use parameterized statements
+- [ ] Command execution doesn't include user input
+- [ ] LDAP queries are properly escaped
+- [ ] XPath queries are parameterized
+
+### Cross-Site Scripting (XSS)
+- [ ] User input is HTML-encoded before output
+- [ ] `innerHTML` / `dangerouslySetInnerHTML` avoided or sanitized
+- [ ] Content-Security-Policy headers configured
+- [ ] DOM manipulation uses safe methods
+
+### Authentication & Authorization
+- [ ] Passwords are hashed with strong algorithms (bcrypt, Argon2)
+- [ ] Rate limiting on authentication endpoints
+- [ ] Session tokens are secure and HttpOnly
+- [ ] Access control checks on every protected endpoint
+- [ ] No IDOR (Insecure Direct Object References)
+
+### Data Exposure
+- [ ] No secrets/credentials in code or logs
+- [ ] PII is encrypted at rest and in transit
+- [ ] Error messages don't leak internal details
+- [ ] Debug endpoints disabled in production
+
+### CSRF & SSRF
+- [ ] CSRF tokens on state-changing operations
+- [ ] URL validation for server-side requests
+- [ ] Whitelist for external service calls
+
+---
+
+## 2. Input Validation & Sanitization
+
+### Validation
+- [ ] All user inputs are validated
+- [ ] Length/size limits enforced
+- [ ] Format validation (email, phone, etc.)
+- [ ] Range checks for numeric values
+- [ ] Whitelist validation where possible
+
+### Sanitization
+- [ ] Output encoded for context (HTML, SQL, Shell)
+- [ ] File uploads validated (type, size, content)
+- [ ] Path traversal characters blocked
+- [ ] Regex patterns are not vulnerable to ReDoS
+- [ ] Deserialization only from trusted sources
+
+---
+
+## 3. Null Safety & Boundary Checks
 
 ### Null/Undefined Handling
 - [ ] All nullable parameters are checked before use
@@ -35,7 +90,7 @@ Copy and track progress during code review:
 
 ---
 
-## 2. Exception Handling
+## 4. Exception Handling
 
 ### Resource Management
 - [ ] Files are closed in finally/using/defer
@@ -56,7 +111,7 @@ Copy and track progress during code review:
 
 ---
 
-## 3. Logic Defects
+## 5. Logic Defects
 
 ### Boolean Logic
 - [ ] De Morgan's law applied correctly
@@ -83,7 +138,7 @@ Copy and track progress during code review:
 
 ---
 
-## 4. Code Smells
+## 6. Code Smells
 
 ### Maintainability
 - [ ] No functions longer than 50 lines
@@ -110,7 +165,7 @@ Copy and track progress during code review:
 
 ---
 
-## 5. Concurrency Issues
+## 7. Concurrency Issues
 
 ### Shared State
 - [ ] Mutable shared state is synchronized
@@ -138,6 +193,28 @@ Copy and track progress during code review:
 
 ---
 
+## 8. Performance Issues
+
+### Database
+- [ ] No N+1 query patterns
+- [ ] Large result sets are paginated
+- [ ] Indexes exist for frequent queries
+- [ ] Connection pooling configured
+
+### Memory & CPU
+- [ ] No unbounded caches or collections
+- [ ] Large objects are streamed, not buffered
+- [ ] Expensive computations are cached
+- [ ] No blocking I/O in async contexts
+
+### Algorithms
+- [ ] Time complexity is appropriate
+- [ ] No unnecessary nested loops
+- [ ] Early exit conditions where possible
+- [ ] Batch operations instead of individual calls
+
+---
+
 ## Language-Specific Checklists
 
 ### Python
@@ -145,27 +222,48 @@ Copy and track progress during code review:
 - [ ] Late binding in closures handled
 - [ ] `with` statement used for resources
 - [ ] `isinstance()` instead of `type()` comparison
+- [ ] No `eval()`/`exec()` on user input
+- [ ] No `pickle.loads()` on untrusted data
 
 ### JavaScript/TypeScript
 - [ ] `===` used instead of `==`
 - [ ] `let`/`const` instead of `var`
 - [ ] Callbacks handle errors
 - [ ] Event listeners removed when component unmounts
+- [ ] No `eval()` or `Function()` on user input
+- [ ] `textContent` used instead of `innerHTML` where possible
 
 ### Java
 - [ ] `equals()` and `hashCode()` consistent
 - [ ] `compareTo()` consistent with `equals()`
 - [ ] Try-with-resources used
 - [ ] Checked exceptions handled
+- [ ] PreparedStatement used for SQL
+- [ ] No ObjectInputStream on untrusted data
 
 ### Go
 - [ ] Error returns checked
-- [ ] Goroutines don't leak
+- [ ] Goroutines don't leak (use WaitGroup/context)
 - [ ] Context cancellation respected
 - [ ] Maps not accessed concurrently without sync
+- [ ] No `fmt.Sprintf` in SQL queries
 
 ### Rust
 - [ ] `unwrap()` usage justified
 - [ ] Error propagation with `?` operator
 - [ ] Lifetimes explicit where needed
-- [ ] `unsafe` blocks documented
+- [ ] `unsafe` blocks documented and minimized
+
+### C/C++
+- [ ] Buffer sizes checked before copy
+- [ ] Memory freed exactly once
+- [ ] Null checks before pointer dereference
+- [ ] Integer operations checked for overflow
+- [ ] Format strings don't include user input
+
+### PHP
+- [ ] PDO with prepared statements used
+- [ ] No `include`/`require` with user input
+- [ ] No `unserialize()` on untrusted data
+- [ ] CSRF tokens validated
+- [ ] File upload type/content validated

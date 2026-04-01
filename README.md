@@ -1,6 +1,7 @@
 # Bug Hunter 🐛🔍
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/Wayne-Lee-cs/Bug_Hunter_Skill)
 
 **Systematically hunt and detect potential bugs in your code before they reach production.**
 
@@ -8,8 +9,8 @@ A comprehensive bug detection prompt/instruction for AI coding assistants. Works
 
 ## Features
 
-- **5 Detection Categories**: Null safety, exception handling, logic defects, code smells, concurrency issues
-- **Multi-Language Support**: Python, JavaScript/TypeScript, Java, Go, Rust, and more
+- **8 Detection Categories**: Security vulnerabilities, input validation, null safety, exception handling, logic defects, code smells, concurrency issues, performance problems
+- **Multi-Language Support**: Python, JavaScript/TypeScript, Java, Go, Rust, C/C++, PHP, and more
 - **Severity Levels**: Critical 🔴, High 🟠, Medium 🟡, Low 🟢
 - **Structured Reports**: Clear issue location, impact analysis, and fix suggestions
 - **Actionable Checklists**: Copy-paste checklists for systematic code review
@@ -18,35 +19,36 @@ A comprehensive bug detection prompt/instruction for AI coding assistants. Works
 
 ### Claude Code
 
-Add to your project's `CLAUDE.md`:
+Copy the contents of `SKILL.md` (or `CLAUDE.md` for a condensed version) into your project's `CLAUDE.md`:
 
 ```markdown
 # Bug Detection Instructions
 
 When reviewing code for bugs, follow these guidelines:
-@import SKILL.md
-```
 
-Or copy the contents of `SKILL.md` directly into your `CLAUDE.md`.
+[Paste SKILL.md content here]
+```
 
 ### OpenAI Codex / Agents
 
-Add to your project's `AGENTS.md`:
+Copy the contents of `AGENTS.md` into your project's `AGENTS.md`:
 
 ```markdown
 # Bug Detection Agent
 
 When hunting for bugs in code, follow this methodology:
-@import SKILL.md
+
+[Paste AGENTS.md content here]
 ```
 
 ### Cursor
 
-Add to your `.cursorrules`:
+Copy the contents of `SKILL.md` into your `.cursorrules` file:
 
 ```markdown
 # Bug Detection Rules
-@import SKILL.md
+
+[Paste SKILL.md content here]
 ```
 
 ### Qoder
@@ -86,35 +88,52 @@ bug-hunter/
 
 ## Detection Categories
 
-### 1. Null Safety & Boundary Issues
+### 1. Security Vulnerabilities
+- SQL/Command injection
+- Cross-site scripting (XSS)
+- Authentication/Authorization flaws
+- CSRF/SSRF
+
+### 2. Input Validation
+- Missing validation
+- Unescaped output
+- Path traversal
+
+### 3. Null Safety & Boundary Issues
 - Null/undefined dereference
 - Array bounds checking
 - Off-by-one errors
 - Division by zero
 
-### 2. Exception Handling Gaps
+### 4. Exception Handling Gaps
 - Silent exception swallowing
 - Resource leaks
 - Missing try-catch blocks
 - Unclosed resources
 
-### 3. Logic Defects
+### 5. Logic Defects
 - Unreachable code
 - Incorrect boolean logic
 - Missing break statements
 - Infinite loops
 
-### 4. Code Smells
+### 6. Code Smells
 - Magic numbers
 - Deep nesting
 - Duplicate code
 - Hardcoded secrets
 
-### 5. Concurrency Problems
+### 7. Concurrency Problems
 - Race conditions
 - Deadlocks
 - Missing synchronization
 - Async/await misuse
+
+### 8. Performance Issues
+- N+1 queries
+- Memory leaks
+- Inefficient algorithms
+- Missing pagination
 
 ## Example Output
 

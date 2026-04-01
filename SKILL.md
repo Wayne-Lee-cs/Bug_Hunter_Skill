@@ -1,8 +1,8 @@
 # Bug Hunter
 
-> Systematically hunt and detect potential bugs in code including null safety issues, boundary conditions, exception handling gaps, logic defects, code smells, and concurrency problems.
+> **v1.1.0** | Systematically hunt and detect potential bugs in code including security vulnerabilities, null safety issues, boundary conditions, exception handling gaps, logic defects, code smells, and concurrency problems.
 
-A comprehensive bug detection prompt/instruction that systematically analyzes code to find potential issues before they reach production. Works with Claude Code, OpenAI Codex, Cursor, Qoder, and other AI coding assistants.
+A comprehensive bug detection prompt/instruction that systematically analyzes code to find potential issues before they reach production. Works with Claude Code, OpenAI Codex, Cursor, Qoder, Windsurf, and other AI coding assistants.
 
 ## Quick Start
 
@@ -15,7 +15,29 @@ When hunting for bugs:
 
 ## Detection Categories
 
-### 1. Null Safety & Boundary Issues
+### 1. Security Vulnerabilities
+
+Check for:
+- **Injection**: SQL injection, command injection, LDAP injection
+- **XSS**: Reflected, stored, DOM-based cross-site scripting
+- **Authentication**: Weak passwords, missing rate limiting, session fixation
+- **Authorization**: Broken access control, IDOR, privilege escalation
+- **Data Exposure**: Sensitive data in logs, hardcoded secrets, PII leaks
+- **Cryptography**: Weak algorithms, improper key management
+- **SSRF/CSRF**: Server-side request forgery, cross-site request forgery
+- **Path Traversal**: Directory traversal, file inclusion vulnerabilities
+
+### 2. Input Validation & Sanitization
+
+Check for:
+- Missing input validation on user data
+- Unescaped output in HTML/SQL/Shell contexts
+- Missing length/format/range checks
+- Type coercion vulnerabilities
+- Regex DoS (ReDoS) patterns
+- Deserialization of untrusted data
+
+### 3. Null Safety & Boundary Issues
 
 Check for:
 - Null/undefined dereference without guards
@@ -23,8 +45,9 @@ Check for:
 - Off-by-one errors in loops
 - Empty collection handling
 - Division by zero possibilities
+- Integer overflow/underflow
 
-### 2. Exception Handling Gaps
+### 4. Exception Handling Gaps
 
 Check for:
 - Catch blocks that swallow exceptions silently
@@ -33,7 +56,7 @@ Check for:
 - Finally blocks with return statements
 - Exception type too broad (catching `Exception` instead of specific types)
 
-### 3. Logic Defects
+### 5. Logic Defects
 
 Check for:
 - Unreachable code paths
@@ -43,7 +66,7 @@ Check for:
 - Infinite loop possibilities
 - Return value ignored when it shouldn't be
 
-### 4. Code Smells
+### 6. Code Smells
 
 Check for:
 - Duplicate code blocks
@@ -54,7 +77,7 @@ Check for:
 - Hardcoded credentials or secrets
 - TODO/FIXME comments that indicate known issues
 
-### 5. Concurrency Problems
+### 7. Concurrency Problems
 
 Check for:
 - Race conditions on shared mutable state
@@ -63,6 +86,17 @@ Check for:
 - Missing synchronization
 - Thread-unsafe singleton implementations
 - Async/await misuse (missing await, fire-and-forget)
+
+### 8. Performance Issues
+
+Check for:
+- N+1 database queries
+- Missing pagination on large datasets
+- Unbounded memory growth / memory leaks
+- Inefficient algorithms (O(n²) when O(n) possible)
+- Blocking I/O in async contexts
+- Missing caching for expensive operations
+- Unnecessary object creation in loops
 
 ## Severity Levels
 
@@ -107,30 +141,52 @@ Report issues using these levels:
 - Missing `if __name__ == "__main__"` guard
 - Mutable default arguments
 - Late binding closures in loops
-- String formatting vulnerabilities
+- String formatting vulnerabilities (f-string injection)
+- Pickle deserialization of untrusted data
+- `eval()`/`exec()` on user input
 
 ### JavaScript/TypeScript
 - `==` instead of `===`
 - Missing `async/await` handling
 - Prototype pollution risks
 - Memory leaks in closures/event listeners
+- `innerHTML` with unsanitized content
+- `eval()`/`Function()` on user input
 
 ### Java/Kotlin
 - Unchecked casts
 - Resource leaks (try-with-resources missing)
 - Null checks after method calls that can't return null
-- Serialization vulnerabilities
+- Serialization/deserialization vulnerabilities
+- SQL concatenation instead of prepared statements
 
 ### Go
 - Ignored error returns
-- Goroutine leaks
+- Goroutine leaks (missing WaitGroup/context)
 - Data races on maps
 - Deferred function argument evaluation
+- `fmt.Sprintf` in SQL queries
 
 ### Rust
 - Unwrap on Result/Option without handling
 - Integer overflow in release mode
 - Unsafe blocks without proper documentation
+- Use-after-free in unsafe code
+
+### C/C++
+- Buffer overflows
+- Use-after-free / double-free
+- Null pointer dereference
+- Integer overflow
+- Format string vulnerabilities
+- Memory leaks (missing free)
+
+### PHP
+- SQL injection (missing PDO/prepared statements)
+- `include`/`require` with user input
+- Unserialize on untrusted data
+- Missing CSRF tokens
+- File upload vulnerabilities
 
 ## Additional Resources
 

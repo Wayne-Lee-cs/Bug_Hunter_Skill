@@ -4,7 +4,68 @@ Real-world examples of bugs detected using this skill.
 
 ---
 
-## Example 1: Null Pointer Dereference
+## Example 1: SQL Injection
+
+### Buggy Code (Python)
+```python
+def get_user(username):
+    query = f"SELECT * FROM users WHERE username = '{username}'"
+    return db.execute(query)  # 🔴 SQL Injection!
+```
+
+### Bug Report
+**Severity:** 🔴 Critical  
+**Category:** Security / Injection  
+**Problem:** User input directly concatenated into SQL query  
+**Impact:** Attacker can inject `'; DROP TABLE users; --` to delete data or extract sensitive information
+
+### Fixed Code
+```python
+def get_user(username):
+    query = "SELECT * FROM users WHERE username = ?"
+    return db.execute(query, (username,))  # Parameterized query
+```
+
+---
+
+## Example 2: Cross-Site Scripting (XSS)
+
+### Buggy Code (JavaScript/React)
+```javascript
+function Comment({ text }) {
+    return <div dangerouslySetInnerHTML={{ __html: text }} />;  // 🔴 XSS!
+}
+
+// Or vanilla JS:
+element.innerHTML = userInput;  // 🔴 XSS!
+```
+
+### Bug Report
+**Severity:** 🔴 Critical  
+**Category:** Security / XSS  
+**Problem:** User-controlled content rendered as HTML without sanitization  
+**Impact:** Attacker can inject `<script>stealCookies()</script>` to steal user sessions
+
+### Fixed Code
+```javascript
+import DOMPurify from 'dompurify';
+
+function Comment({ text }) {
+    // Option 1: Sanitize HTML
+    const clean = DOMPurify.sanitize(text);
+    return <div dangerouslySetInnerHTML={{ __html: clean }} />;
+    
+    // Option 2: Use textContent (preferred if HTML not needed)
+    return <div>{text}</div>;  // React auto-escapes
+}
+
+// Vanilla JS:
+element.textContent = userInput;  // Safe - treats as text
+```
+
+---
+
+## Example 3: Null Pointer Dereference
 
 ### Buggy Code (Python)
 ```python
@@ -30,7 +91,7 @@ def get_user_email(user_id):
 
 ---
 
-## Example 2: Off-By-One Error
+## Example 4: Off-By-One Error
 
 ### Buggy Code (JavaScript)
 ```javascript
@@ -41,28 +102,37 @@ function getLastItems(arr, n) {
     }
     return result;
 }
+// Also: if n > arr.length, starts from negative index!
 ```
 
 ### Bug Report
 **Severity:** 🔴 Critical  
 **Category:** Boundary Issue  
-**Problem:** Loop uses `<=` instead of `<`, accessing `arr[arr.length]` which is undefined  
-**Impact:** Returns array with `undefined` as last element
+**Problem:** Loop uses `<=` instead of `<`, accessing `arr[arr.length]` which is undefined. Also, no validation when `n > arr.length`  
+**Impact:** Returns array with `undefined` as last element, or accesses negative indices
 
 ### Fixed Code
 ```javascript
 function getLastItems(arr, n) {
+    if (!arr || arr.length === 0) return [];
+    const count = Math.min(n, arr.length);  // Prevent negative index
     const result = [];
-    for (let i = arr.length - n; i < arr.length; i++) {
+    for (let i = arr.length - count; i < arr.length; i++) {
         result.push(arr[i]);
     }
     return result;
+}
+
+// Or more elegantly:
+function getLastItemsClean(arr, n) {
+    if (!arr) return [];
+    return arr.slice(-Math.min(n, arr.length));
 }
 ```
 
 ---
 
-## Example 3: Resource Leak
+## Example 5: Resource Leak
 
 ### Buggy Code (Java)
 ```java
@@ -101,7 +171,7 @@ public String readFile(String path) throws IOException {
 
 ---
 
-## Example 4: Race Condition
+## Example 6: Race Condition
 
 ### Buggy Code (Go)
 ```go
@@ -116,7 +186,7 @@ func incrementCounter() {
 func main() {
     go incrementCounter()
     go incrementCounter()
-    time.Sleep(time.Second)
+    time.Sleep(time.Second)  // 🟠 Also bad: using Sleep instead of WaitGroup
     fmt.Println(counter)  // Expected 2000, but result is unpredictable
 }
 ```
@@ -124,23 +194,39 @@ func main() {
 ### Bug Report
 **Severity:** 🔴 Critical  
 **Category:** Concurrency / Race Condition  
-**Problem:** Multiple goroutines increment shared variable without synchronization  
+**Problem:** Multiple goroutines increment shared variable without synchronization, and uses `time.Sleep` instead of proper synchronization  
 **Impact:** Data race causes incorrect count, undefined behavior
 
 ### Fixed Code
 ```go
+import (
+    "fmt"
+    "sync"
+    "sync/atomic"
+)
+
 var counter int64
 
-func incrementCounter() {
+func incrementCounter(wg *sync.WaitGroup) {
+    defer wg.Done()
     for i := 0; i < 1000; i++ {
         atomic.AddInt64(&counter, 1)
     }
+}
+
+func main() {
+    var wg sync.WaitGroup
+    wg.Add(2)
+    go incrementCounter(&wg)
+    go incrementCounter(&wg)
+    wg.Wait()  // Proper synchronization
+    fmt.Println(counter)  // Now reliably prints 2000
 }
 ```
 
 ---
 
-## Example 5: Silent Exception Swallowing
+## Example 7: Silent Exception Swallowing
 
 ### Buggy Code (TypeScript)
 ```typescript
@@ -176,7 +262,7 @@ async function fetchUserData(userId: string) {
 
 ---
 
-## Example 6: Mutable Default Argument (Python-specific)
+## Example 8: Mutable Default Argument (Python-specific)
 
 ### Buggy Code
 ```python
@@ -207,7 +293,7 @@ def add_item(item, items=None):
 
 ---
 
-## Example 7: Missing Await
+## Example 9: Missing Await
 
 ### Buggy Code (JavaScript)
 ```javascript
@@ -244,35 +330,45 @@ async function processOrdersParallel(orderIds) {
 
 ---
 
-## Example 8: Division By Zero
+## Example 10: Division By Zero
 
 ### Buggy Code (C#)
 ```csharp
 public double CalculateAverage(int[] numbers) {
     int sum = 0;
     foreach (var n in numbers) {
-        sum += n;
+        sum += n;  // 🟠 Potential integer overflow for large arrays
     }
     return sum / numbers.Length;  // 🔴 Bug: division by zero if empty
+                                  // 🟠 Bug: integer division loses precision
 }
 ```
 
 ### Bug Report
 **Severity:** 🔴 Critical  
 **Category:** Boundary Issue  
-**Problem:** No check for empty array before division  
-**Impact:** `DivideByZeroException` when array is empty
+**Problem:** No check for empty/null array, integer division loses decimal precision, potential overflow  
+**Impact:** `DivideByZeroException` when array is empty, incorrect results for non-integer averages
 
 ### Fixed Code
 ```csharp
 public double CalculateAverage(int[] numbers) {
     if (numbers == null || numbers.Length == 0) {
-        return 0;  // or throw ArgumentException
+        throw new ArgumentException("Array must not be null or empty", nameof(numbers));
     }
-    int sum = 0;
+    // Use long to prevent overflow, or LINQ for cleaner code
+    long sum = 0;
     foreach (var n in numbers) {
         sum += n;
     }
     return (double)sum / numbers.Length;
+}
+
+// Or using LINQ (recommended):
+public double CalculateAverageLinq(int[] numbers) {
+    if (numbers == null || numbers.Length == 0) {
+        throw new ArgumentException("Array must not be null or empty", nameof(numbers));
+    }
+    return numbers.Average();  // Handles precision correctly
 }
 ```
